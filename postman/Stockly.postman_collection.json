@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "Stockly API",
+    "description": "Stockly — Laravel 12 retail SaaS. Base URL: {{baseUrl}}. Login first to populate {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (get token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('token', json.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@stockly.test\",\n  \"password\": \"password\",\n  \"device_name\": \"postman\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout", "header": [{ "key": "Accept", "value": "application/json" }] }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List (search/filter/paginate)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/products?search=Lavazza&per_page=15", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Show",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/products/1", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Lavazza Espresso 500g\",\n  \"sku\": \"SKU-TEST-100\",\n  \"category_id\": 1,\n  \"price\": 8.99,\n  \"cost\": 5.20,\n  \"is_active\": true\n}" }
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/products/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 9.49\n}" }
+          }
+        },
+        {
+          "name": "Delete (admin only)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/products/1", "header": [{ "key": "Accept", "value": "application/json" }] }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers?search=Mario&per_page=15", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/customers",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mario Rossi\",\n  \"email\": \"mario@example.com\",\n  \"phone\": \"+39 333 1234567\",\n  \"company\": \"Rossi SRL\",\n  \"city\": \"Milano\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "List",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/inventory?warehouse_id=1", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Low stock alerts",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/inventory/low-stock", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Movements",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/inventory/movements?product_id=1", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Adjust (+in / -out)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/inventory/adjust",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": 1,\n  \"warehouse_id\": 1,\n  \"quantity\": 10,\n  \"reason\": \"Goods receipt PO-123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/orders?status=confirmed", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Create (transactional, decrements stock)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"warehouse_id\": 1,\n  \"status\": \"confirmed\",\n  \"tax_rate\": 0.22,\n  \"discount_amount\": 0,\n  \"notes\": \"Postman test order\",\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 2 },\n    { \"product_id\": 2, \"quantity\": 1, \"unit_price\": 5.99 }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Show",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/orders/1", "header": [{ "key": "Accept", "value": "application/json" }] }
+        },
+        {
+          "name": "Update status",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/orders/1/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"shipped\"\n}" }
+          }
+        },
+        {
+          "name": "Cancel (restores stock)",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/orders/1/cancel", "header": [{ "key": "Accept", "value": "application/json" }] }
+        }
+      ]
+    },
+    {
+      "name": "Error examples",
+      "item": [
+        {
+          "name": "401 — no token",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/products" }
+        },
+        {
+          "name": "422 — validation (empty product)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        },
+        {
+          "name": "422 — insufficient stock",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": 1,\n  \"warehouse_id\": 1,\n  \"items\": [{ \"product_id\": 1, \"quantity\": 99999 }]\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
