@@ -9,11 +9,13 @@
   <a href="{{ route('orders.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ New order</a>
 </div>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
   @php $cards = [
     ['Revenue today', '€ '.number_format($kpis['revenueToday'],2), 'bg-indigo-600'],
     ['Revenue this month', '€ '.number_format($kpis['revenueMonth'],2), 'bg-emerald-600'],
+    ['Gross profit (month)', '€ '.number_format($profit['profit'],2), 'bg-teal-600'],
     ['Orders this month', $kpis['ordersMonth'].' · avg € '.number_format($kpis['avgTicket'],2), 'bg-slate-900'],
+    ['Margin % (month)', $profit['margin'].' %', 'bg-cyan-700'],
     ['Stock value (cost)', '€ '.number_format($kpis['stockValue'],2), 'bg-amber-600'],
   ]; @endphp
   @foreach($cards as [$label,$value,$color])
@@ -53,7 +55,7 @@
     <h2 class="font-semibold mb-3">Top products</h2>
     <ul class="space-y-2 text-sm">
       @forelse($topProducts as $p)
-      <li class="flex justify-between"><span>{{ $p->name }} <span class="text-slate-400">×{{ $p->qty }}</span></span><span class="font-semibold">€ {{ number_format($p->revenue,2) }}</span></li>
+      <li class="flex justify-between"><span>{{ $p->name }} <span class="text-slate-400">×{{ $p->qty }}</span></span><span class="text-right"><span class="font-semibold">€ {{ number_format($p->revenue,2) }}</span> <span class="text-emerald-600 text-xs">+€ {{ number_format($p->profit,2) }}</span></span></li>
       @empty<li class="text-slate-400">No sales yet.</li>@endforelse
     </ul>
   </div>

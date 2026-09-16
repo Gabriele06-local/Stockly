@@ -12,11 +12,12 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $kpis = $this->dashboard->kpis();
+        $profit = $this->dashboard->profitMonth();
         $revenue = $this->dashboard->revenueLast14Days();
         $topProducts = $this->dashboard->topProducts();
         $lowStock = $this->dashboard->lowStockItems();
         $recentOrders = $this->dashboard->recentOrders();
 
-        return view('dashboard', compact('kpis', 'revenue', 'topProducts', 'lowStock', 'recentOrders'));
+        return view('dashboard', compact('kpis', 'profit', 'revenue', 'topProducts', 'lowStock', 'recentOrders'));
     }
 }

@@ -70,9 +70,29 @@ class DashboardService
             ->join('products', 'products.id', '=', 'order_items.product_id')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->whereNotIn('orders.status', ['draft', 'cancelled'])
-            ->selectRaw('products.id, products.name, products.sku, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue')
+            ->selectRaw('products.id, products.name, products.sku, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, SUM(order_items.quantity * (order_items.unit_price - COALESCE(products.cost, 0))) as profit')
             ->groupBy('products.id', 'products.name', 'products.sku')
             ->orderByDesc('revenue')->limit($limit)->get();
+    }
+
+    /** Gross profit of the current month (net sales − cost of goods sold). */
+    public function profitMonth(): array
+    {
+        $row = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->whereNotIn('orders.status', ['draft', 'cancelled'])
+            ->whereMonth('orders.created_at', now()->month)
+            ->whereYear('orders.created_at', now()->year)
+            ->selectRaw('COALESCE(SUM(order_items.total), 0) as revenue, COALESCE(SUM(order_items.quantity * COALESCE(products.cost, 0)), 0) as cogs')
+            ->first();
+
+        $revenue = round((float) ($row->revenue ?? 0), 2);
+        $cogs = round((float) ($row->cogs ?? 0), 2);
+        $profit = round($revenue - $cogs, 2);
+        $margin = $revenue > 0 ? round($profit / $revenue * 100, 1) : 0;
+
+        return compact('revenue', 'cogs', 'profit', 'margin');
     }
 
     public function lowStockItems(int $limit = 8): Collection
