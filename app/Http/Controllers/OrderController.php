@@ -38,8 +38,16 @@ class OrderController extends Controller
         $warehouses = Warehouse::orderBy('name')->get();
         $products = Product::active()->with('inventories')->orderBy('name')->limit(200)->get();
         $defaultWarehouse = $warehouses->firstWhere('is_default', true) ?? $warehouses->first();
+        // Pre-serialize for the view: keeps Blade free of arrow-function expressions
+        // (which the @json directive cannot parse) and shrinks the payload.
+        $productsJson = $products->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'price' => (float) $p->price,
+            'stock' => (int) $p->inventories->sum('quantity'),
+        ])->values()->all();
 
-        return view('orders.create', compact('customers', 'warehouses', 'products', 'defaultWarehouse'));
+        return view('orders.create', compact('customers', 'warehouses', 'products', 'productsJson', 'defaultWarehouse'));
     }
 
     public function store(StoreOrderRequest $request)

@@ -28,7 +28,7 @@
 @endsection
 @push('scripts')
 <script>
-const PRODUCTS = @json($products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>(float)$p->price,'stock'=>$p->inventories->sum('quantity')]));
+const PRODUCTS = @json($productsJson ?? []);
 function addLine(){
   const div = document.createElement('div');
   div.className = 'flex gap-2 items-center';
