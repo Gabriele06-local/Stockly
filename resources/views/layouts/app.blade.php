@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@yield('title', 'Stockly') — Stockly</title>
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = { theme: { extend: { colors: { brand: {50:'#eef2ff',600:'#4f46e5',700:'#4338ca'} } } } }
