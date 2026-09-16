@@ -28,7 +28,14 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('dashboard'));
+            // Never honor asset-like intended URLs (e.g. /favicon.ico) that
+            // would land the user on a blank page after login.
+            $intended = session()->pull('url.intended', route('dashboard'));
+            if (! is_string($intended) || preg_match('~\.(ico|png|jpe?g|svg|css|js|map|woff2?)(\?.*)?$~i', $intended)) {
+                $intended = route('dashboard');
+            }
+
+            return redirect()->to($intended);
         }
 
         return back()->withErrors(['email' => 'Invalid credentials.'])->onlyInput('email');
